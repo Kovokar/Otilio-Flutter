@@ -12,33 +12,89 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
+      backgroundColor: Colors.grey[100],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Icon(Icons.lock_outline, size: 80, color: theme.primaryColor),
+              const SizedBox(height: 20),
+
+              Text(
+                "Bem-vindo",
+                textAlign: TextAlign.center,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              Text(
+                "Faça login para continuar",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Campo de email
+              TextField(
                 controller: _emailCtrl,
-                decoration: InputDecoration(labelText: 'Email')),
-            TextField(
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Campo de senha
+              TextField(
                 controller: _passCtrl,
-                decoration: InputDecoration(labelText: 'Senha'),
-                obscureText: true),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Aqui você chamaria o controller: authController.login(...)
-                // Por enquanto navegar para home direto
-                Navigator.pushReplacementNamed(context, AppRoutes.home);
-              },
-              child: Text('Entrar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.register),
-              child: Text('Cadastrar'),
-            ),
-          ],
+                decoration: InputDecoration(
+                  labelText: 'Senha',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+                obscureText: true,
+              ),
+
+              const SizedBox(height: 24),
+
+              // Botão entrar
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    textStyle: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, AppRoutes.home);
+                  },
+                  child: const Text("Entrar"),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Botão cadastrar
+              TextButton(
+                onPressed: () =>
+                    Navigator.pushNamed(context, AppRoutes.register),
+                child: const Text("Criar conta"),
+              ),
+            ],
+          ),
         ),
       ),
     );
