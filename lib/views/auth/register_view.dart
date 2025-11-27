@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_routes.dart';
+import '../../controllers/auth_controller.dart';
 
 class RegisterView extends StatefulWidget {
   @override
@@ -95,8 +96,20 @@ class _RegisterViewState extends State<RegisterView> {
                     textStyle: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  onPressed: () {
-                    // Aqui futuramente chamaremos o controller
+                  onPressed: () async {
+                    final auth = AuthController();
+                    final error = await auth.register(
+                      _nameCtrl.text.trim(),
+                      _emailCtrl.text.trim(),
+                      _passCtrl.text.trim(),
+                    );
+
+                    if (error != null) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(error)));
+                      return;
+                    }
+
                     Navigator.pushReplacementNamed(context, AppRoutes.home);
                   },
                   child: const Text("Cadastrar"),

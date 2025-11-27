@@ -1,55 +1,30 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
 import '../repositories/user_repository.dart';
-import 'dart:math';
 
 class AuthController with ChangeNotifier {
   final UserRepository _repo = UserRepository();
-  User? currentUser;
-  bool loading = false;
 
-  Future<void> login({required String email, required String password}) async {
-    loading = true;
+  Map<String, dynamic>? currentUser;
+
+  Future<String?> register(String name, String email, String password) async {
+    final error = await _repo.register(name, email, password);
+    if (error != null) return error;
+
+    currentUser = {"name": name, "email": email};
     notifyListeners();
-
-    // Simulação simples: cria um usuário e salva
-    await Future.delayed(Duration(seconds: 1));
-    final user = User(
-      id: Random().nextInt(10000).toString(),
-      name: 'Usuário',
-      email: email,
-    );
-    await _repo.saveUser(user);
-    currentUser = user;
-
-    loading = false;
-    notifyListeners();
+    return null;
   }
 
-  Future<void> register(
-      {required String name,
-      required String email,
-      required String password}) async {
-    loading = true;
-    notifyListeners();
+  Future<String?> login(String email, String password) async {
+    final error = await _repo.login(email, password);
+    if (error != null) return error;
 
-    await Future.delayed(Duration(seconds: 1));
-    final user =
-        User(id: Random().nextInt(10000).toString(), name: name, email: email);
-    await _repo.saveUser(user);
-    currentUser = user;
-
-    loading = false;
+    currentUser = {"email": email};
     notifyListeners();
+    return null;
   }
 
-  Future<void> loadSavedUser() async {
-    currentUser = await _repo.getUser();
-    notifyListeners();
-  }
-
-  Future<void> logout() async {
-    await _repo.clear();
+  void logout() {
     currentUser = null;
     notifyListeners();
   }

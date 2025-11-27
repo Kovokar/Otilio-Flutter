@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_routes.dart';
+import '../../controllers/auth_controller.dart';
 
 class LoginView extends StatefulWidget {
   @override
@@ -78,7 +79,19 @@ class _LoginViewState extends State<LoginView> {
                     textStyle: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    final auth = AuthController();
+                    final error = await auth.login(
+                      _emailCtrl.text.trim(),
+                      _passCtrl.text.trim(),
+                    );
+
+                    if (error != null) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(error)));
+                      return;
+                    }
+
                     Navigator.pushReplacementNamed(context, AppRoutes.home);
                   },
                   child: const Text("Entrar"),
