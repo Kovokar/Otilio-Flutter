@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import '../repositories/user_repository.dart';
 
 class AuthController with ChangeNotifier {
-  final UserRepository _repo = UserRepository();
+  // SINGLETON
+  static final AuthController instance = AuthController._internal();
+  factory AuthController() => instance;
+  AuthController._internal();
 
+  final UserRepository _repo = UserRepository();
   Map<String, dynamic>? currentUser;
 
   Future<String?> register(String name, String email, String password) async {

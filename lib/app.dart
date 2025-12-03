@@ -3,6 +3,8 @@ import 'core/app_routes.dart';
 import 'views/auth/login_view.dart';
 import 'views/auth/register_view.dart';
 import 'views/home/home_view.dart';
+import 'views/location/add_location_view.dart';
+import 'views/location/my_locations_view.dart';
 
 class App extends StatelessWidget {
   @override
@@ -14,6 +16,8 @@ class App extends StatelessWidget {
         AppRoutes.login: (_) => LoginView(),
         AppRoutes.register: (_) => RegisterView(),
         AppRoutes.home: (_) => HomeView(),
+        AppRoutes.addLocation: (_) => AddLocationView(),
+        AppRoutes.myLocations: (_) => MyLocationsView(),
       },
     );
   }
