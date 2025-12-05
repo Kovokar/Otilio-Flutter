@@ -1,92 +1,126 @@
 import 'package:flutter/material.dart';
-import '../../core/app_routes.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../controllers/location_controller.dart';
+import '../../controllers/auth_controller.dart';
+import '../location/add_location_view.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
+  @override
+  _HomeViewState createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  final locationCtrl = LocationController();
+  final auth = AuthController();
+  GoogleMapController? mapCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    if (auth.currentUser != null) {
+      locationCtrl.loadLocations(email: auth.currentUser!["email"]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final filteredLocations = locationCtrl.locations
+        .where((loc) =>
+            !locationCtrl.showOnlyMine ||
+            loc.userEmail == auth.currentUser!["email"])
+        .toList();
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Tela Principal"),
+        title: Text("Locais de Assaltos"),
         centerTitle: true,
-        elevation: 2,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
+      body: Column(
+        children: [
+          // --- TOGGLE ---
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // CARD PRINCIPAL
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Icon(Icons.home_outlined,
-                        size: 80, color: theme.primaryColor),
-                    const SizedBox(height: 20),
-                    Text(
-                      "Bem-vindo!",
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Essa é a sua tela principal.\n"
-                      "Em breve adicionaremos mais funcionalidades!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // BOTÃO DE LOGOUT (por enquanto apenas volta)
-              SizedBox(
-                height: 50,
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: Icon(Icons.logout),
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  onPressed: () {
-                    // Por enquanto apenas volta ao login
-                    Navigator.pushReplacementNamed(context, AppRoutes.login);
-                  },
-                  label: Text("Sair"),
-                ),
+              Text("Mostrar apenas meus locais"),
+              Switch(
+                value: locationCtrl.showOnlyMine,
+                onChanged: (val) {
+                  setState(() {
+                    locationCtrl.showOnlyMine = val;
+                  });
+                },
               ),
             ],
           ),
-        ),
+
+          // --- MAPA ---
+          Expanded(
+            child: GoogleMap(
+              onMapCreated: (c) => mapCtrl = c,
+              initialCameraPosition: CameraPosition(
+                target: LatLng(-3.742, -38.523), // Ponto padrão
+                zoom: 13,
+              ),
+              markers: filteredLocations.map((loc) {
+                return Marker(
+                  markerId: MarkerId(loc.id),
+                  position: LatLng(loc.lat, loc.lng),
+                  infoWindow: InfoWindow(
+                    title: loc.description,
+                    snippet:
+                        "Adicionado por: ${loc.userEmail}\nHora: ${loc.date.hour.toString().padLeft(2, '0')}:${loc.date.minute.toString().padLeft(2, '0')}",
+                  ),
+                );
+              }).toSet(),
+            ),
+          ),
+
+          SizedBox(height: 10),
+
+          // --- BOTÕES ---
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      // Abre a tela de adicionar local
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddLocationView(),
+                        ),
+                      );
+
+                      // Se um local foi adicionado, recarrega os locais
+                      if (result == true) {
+                        setState(() {
+                          locationCtrl.loadLocations(
+                              email: auth.currentUser!["email"]);
+                        });
+                      }
+                    },
+                    child: Text("Adicionar Endereço"),
+                  ),
+                ),
+                SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, "/my-locations");
+                    },
+                    child: Text("Ver Endereços Adicionados"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

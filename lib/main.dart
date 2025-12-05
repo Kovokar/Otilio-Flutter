@@ -9,6 +9,7 @@ void main() async {
 
   // caixa onde vamos guardar usuarios
   await Hive.openBox('users');
+  await Hive.openBox('locations');
 
   runApp(App());
 }
